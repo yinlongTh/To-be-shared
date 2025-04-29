@@ -1,0 +1,9 @@
+using System.IO;
+var file = @"C:\Temp\relationships.csv";
+var lines = new List<string>();
+lines.Add("FromTable,FromColumn,ToTable,ToColumn,IsActive");
+foreach(var rel in Model.Relationships)
+{
+    lines.Add($"{rel.FromTable.Name},{rel.FromColumn.Name},{rel.ToTable.Name},{rel.ToColumn.Name},{rel.IsActive}");
+}
+File.WriteAllLines(file, lines);
