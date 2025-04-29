@@ -1,0 +1,37 @@
+using System;
+using System.IO;
+
+// Collect visible columns, measures, partitions, hierarchies, and KPIs
+var objects = Model.AllMeasures
+    .Where(m => !m.IsHidden && !m.Table.IsHidden)
+    .Cast<ITabularNamedObject>()
+    .Concat(Model.AllColumns.Where(c => !c.IsHidden && !c.Table.IsHidden))
+    .Concat(Model.AllPartitions)
+    .Concat(Model.AllHierarchies)
+    .Concat(Model.AllKPIs);
+
+// Export properties in TSV format
+var tsv = ExportProperties(objects, "Name,ObjectType,Parent,Description,FormatString,DataType,Expression");
+var relationshipsTsv = ExportProperties(Model.Relationships, "Name,FromTable,ToTable,Type,IsActive,Parent,RefreshedTime,SecurityFilteringBehavior,State");
+var rolesTsv = ExportProperties(Model.Roles, "Name,FriendlyName,Parent,Description,Site,OwningCollection");
+var perspectivesTsv = ExportProperties(Model.Perspectives, "Name,Description,ObjectType,Parent,PerspectiveTables");
+var tablesTsv = ExportProperties(Model.Tables, "Name,Description,CalculationGroup,DataCategory,ExcludeFromModelRefresh,IsHidden,ModifiedTime,ObjectType,Parent,RefreshPolicy");
+
+// Get model name and user name for file paths
+var modelName = Model.Database.Name;
+string userName = Environment.UserName;
+
+// Define file paths to save TSV files (adjust path if needed)
+var basePath = $@"C:\Users\{userName}\Downloads\";
+var filename = Path.Combine(basePath, $"{modelName}_MeasuresColsPartitionsHiersKPI.tsv");
+var relationshipsFileName = Path.Combine(basePath, $"{modelName}_Relationships.tsv");
+var rolesFileName = Path.Combine(basePath, $"{modelName}_Roles.tsv");
+var perspectivesFileName = Path.Combine(basePath, $"{modelName}_Perspectives.tsv");
+var tablesFileName = Path.Combine(basePath, $"{modelName}_Tables.tsv");
+
+// Save TSV files
+SaveFile(filename, tsv);
+SaveFile(relationshipsFileName, relationshipsTsv);
+SaveFile(rolesFileName, rolesTsv);
+SaveFile(perspectivesFileName, perspectivesTsv);
+SaveFile(tablesFileName, tablesTsv);
